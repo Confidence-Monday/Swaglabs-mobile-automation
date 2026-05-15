@@ -1,25 +1,40 @@
-/// <reference types="webdriverio" />
-/// <reference types="@wdio/mocha-framework" />
-/// <reference types="@wdio/appium-service" />
-
 describe('Swag Labs Login', () => {
 
-  before(async () => {
-    await driver.startActivity("com.swaglabsmobileapp", "com.swaglabsmobileapp.MainActivity");
-    await driver.setTimeout({ implicit: 2000 });
-  });
+  beforeEach(async () => {
+    const usernameField = await $('~test-Username')
+    await usernameField.waitForDisplayed({ timeout: 30000 })
+  })
 
-  it('should login with valid credentials', async () => {
-    const usernameField = await $('~test-Username');
-    const passwordField = await $('~test-Password');
-    const loginButton = await $('~test-LOGIN');
+  it('should show error on empty login', async () => {
+    const loginBtn = await $('~test-LOGIN')
+    await loginBtn.click()
+    const error = await $('~test-Error Message')
+    await error.waitForDisplayed({ timeout: 10000 })
+    await expect(error).toBeDisplayed()
+  })
 
-    await usernameField.setValue('standard_user');
-    await passwordField.setValue('secret_sauce');
-    await loginButton.click();
+  it('should show error on invalid credentials', async () => {
+    const username = await $('~test-Username')
+    const password = await $('~test-Password')
+    const loginBtn = await $('~test-LOGIN')
+    await username.setValue('wrong_user')
+    await password.setValue('wrong_pass')
+    await loginBtn.click()
+    const error = await $('~test-Error Message')
+    await error.waitForDisplayed({ timeout: 10000 })
+    await expect(error).toBeDisplayed()
+  })
 
-    const productsTitle = await $('~test-PRODUCTS');
-    await expect(productsTitle).toBeDisplayed();
-  });
+  it('should login successfully with valid credentials', async () => {
+    const username = await $('~test-Username')
+    const password = await $('~test-Password')
+    const loginBtn = await $('~test-LOGIN')
+    await username.setValue('standard_user')
+    await password.setValue('secret_sauce')
+    await loginBtn.click()
+    const products = await $('~test-Cart drop zone')
+    await products.waitForDisplayed({ timeout: 30000 })
+    await expect(products).toBeDisplayed()
+  })
 
-});
+})
